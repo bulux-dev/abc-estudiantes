@@ -15,6 +15,4 @@ try:
     cursor.execute("SELECT * FROM tb_estudiantes")
 except Exception as ex:
     print(ex)
-finally:
-    connection.close()
-    print("Conexion finalizada")
+    
