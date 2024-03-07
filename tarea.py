@@ -14,16 +14,16 @@ try:
     cursor.execute("SELECT version()")
     row=cursor.fetchone()
     print(row)
-    cursor.execute("SELECT * FROM tb_estudiantes")
+    cursor.execute("SELECT * FROM ingenieria")
 except Exception as ex:
     print(ex)
     
-# Validar la cadena introducida...
+    
 
 
 def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad):
 
-    # Validación de datos
+
     if not isinstance(carnet, int):
         raise ValueError("El carnet debe ser un número entero")
     if not nombres or not isinstance(nombres, str):
@@ -37,10 +37,10 @@ def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimi
     if edad < 0:
         raise ValueError("La edad no puede ser negativa")
 
-    # Transacción
+
     try:
         cursor.execute("""
-            INSERT INTO tb_estudiantes (carnet, nombres, apellidos, correo, fecha_nacimiento_str, edad)
+            INSERT INTO ingenieria (carnet, nombres, apellidos, correo, fecha_nacimiento_str, edad)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad))
         connection.commit()
