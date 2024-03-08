@@ -63,3 +63,25 @@ except ValueError as ex:
     print(ex)
 
 print("conexion cerrada")
+
+
+def obtener_estudiantes_por_carrera(carrera):
+    cursor.execute("""
+        SELECT * FROM ingenieria
+        WHERE carrera = %s
+    """, (carrera,))
+    return cursor.fetchall()
+
+carrera = input("Ingresa la carrera: ")
+estudiantes = obtener_estudiantes_por_carrera(carrera)
+
+for estudiante in estudiantes:
+    print(f"Carnet: {estudiante[0]}")
+    print(f"Nombres: {estudiante[1]}")
+    print(f"Apellidos: {estudiante[2]}")
+    print(f"Correo electrónico: {estudiante[3]}")
+    print(f"Fecha de nacimiento: {estudiante[4]}")
+    print(f"Edad: {estudiante[5]}")
+
+print("conexion cerrada")
+
