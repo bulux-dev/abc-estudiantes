@@ -1,25 +1,40 @@
 from datetime import datetime, date
 import psycopg2
-
-
 try:
     connection=psycopg2.connect(
         host='localhost',
         user='postgres',
         password='admin',
-        database='tarea_ing_software'
+        database='ingenieria'
     )
     print("Conexion exitosa")
     cursor = connection.cursor()
     cursor.execute("SELECT version()")
     row=cursor.fetchone()
     print(row)
-    cursor.execute("SELECT * FROM ingenieria")
+    cursor.execute("SELECT * FROM tb_ingenieria")
 except Exception as ex:
     print(ex)
-    
-    
 
+def menu():
+  opcion = None
+  while not opcion:
+    print("**Menú**")
+    print("1. Agregar")
+    print("2. Borrar")
+    print("3. Consultar")
+    print("0. Salir")
+    opcion = input("Ingrese una opción: ")
+
+    if not opcion.isdigit():
+      print("Opción inválida. Debe ingresar un número.")
+      opcion = None
+
+    elif int(opcion) < 0 or int(opcion) > 3:
+      print("Opción fuera de rango. Debe elegir entre 0 y 3.")
+      opcion = None
+
+  return int(opcion)
 
 def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad):
 
@@ -40,7 +55,7 @@ def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimi
 
     try:
         cursor.execute("""
-            INSERT INTO ingenieria (carnet, nombres, apellidos, correo, fecha_nacimiento_str, edad)
+            INSERT INTO tb_ingenieria (carnet, nombres, apellidos, correo, fecha_nacimiento_str, edad)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad))
         connection.commit()
@@ -48,40 +63,86 @@ def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimi
         print(f"Error al insertar datos: {ex}")
         connection.rollback()
 
-carnet = int(input("Ingresa tu carnet:\n"))
-nombres = input("Ingresa tus nombres:\n")
-apellidos = input("Ingresa tus apellidos:\n")
-correo_electronico = input("Ingresa tu correo electronico:\n")
-fecha_nacimiento_str = str(input("Introduce tu fecha de nacimiento (YYYY-MM-DD): \n"))
-fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+def datos_para_registro():
+    carnet = int(input("Ingresa tu carnet:\n"))
+    nombres = input("Ingresa tus nombres:\n")
+    apellidos = input("Ingresa tus apellidos:\n")
+    correo_electronico = input("Ingresa tu correo electronico:\n")
+    fecha_nacimiento_str = str(input("Introduce tu fecha de nacimiento (YYYY-MM-DD): \n"))
+    fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
 
-edad = (date.today() - fecha_nacimiento).days / 365.25
+    edad = (date.today() - fecha_nacimiento).days / 365.25
+    try:
+        insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad)
+    except ValueError as ex:
+        print(ex)
+    finally:
+       connection.close()
 
-try:
-    insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad)
-except ValueError as ex:
-    print(ex)
-
-print("conexion cerrada")
 
 
-def obtener_estudiantes_por_carrera(carrera):
+def borrar_datos():
+  print("Eliminar estudiante")
+  carnet = int(input("Ingrese carnet a eliminar: "))
+  try:
     cursor.execute("""
-        SELECT * FROM ingenieria
-        WHERE carrera = %s
-    """, (carrera,))
-    return cursor.fetchall()
+      DELETE FROM tb_ingenieria
+      WHERE carnet = %s
+    """, (carnet,))
+    connection.commit()
+    print("Estudiante eliminado.")
+  except psycopg2.Error as ex:
+    print(f"Error de compilacion: {ex}")
+    connection.rollback()
+  finally:
+     connection.close()
 
-carrera = input("Ingresa la carrera: ")
-estudiantes = obtener_estudiantes_por_carrera(carrera)
 
-for estudiante in estudiantes:
-    print(f"Carnet: {estudiante[0]}")
-    print(f"Nombres: {estudiante[1]}")
-    print(f"Apellidos: {estudiante[2]}")
-    print(f"Correo electrónico: {estudiante[3]}")
-    print(f"Fecha de nacimiento: {estudiante[4]}")
-    print(f"Edad: {estudiante[5]}")
 
-print("conexion cerrada")
 
+
+def consulta_de_datos():
+    print("**Consultar datos**")
+
+    # Solicitar el campo de búsqueda
+    carnet = input("Ingrese carnet de estudiante ")
+
+    # Construir la consulta SQL
+    consulta = f"SELECT * FROM tb_ingenieria WHERE carnet = '{carnet}'"
+
+    try:
+        cursor.execute(consulta)
+        resultados = cursor.fetchall()
+
+        if resultados:
+            print("Estudiante encontrado")
+            for fila in resultados:
+                print(fila)
+        else:
+            print(f"No se encontraron resultados para la búsqueda: {carnet}")
+
+    except psycopg2.Error as ex:
+        print(f"Error al realizar la consulta: {ex}")
+    finally:
+       connection.close()
+
+
+
+
+def main():
+  opcion = menu()
+
+  if opcion == 1:
+    datos_para_registro();
+    pass
+  elif opcion == 2:
+    borrar_datos()
+    pass
+  elif opcion == 3:
+    consulta_de_datos();
+    pass
+  else:
+    print("Error")
+
+if __name__ == "__main__":
+  main()
