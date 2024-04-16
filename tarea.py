@@ -4,6 +4,7 @@ try:
     connection=psycopg2.connect(
         host='localhost',
         user='postgres',
+        port='5433',
         password='admin',
         database='ingenieria'
     )
@@ -37,8 +38,6 @@ def menu():
   return int(opcion)
 
 def insertar_alumno(carnet, nombres, apellidos, correo_electronico, fecha_nacimiento, edad):
-
-
     if not isinstance(carnet, int):
         raise ValueError("El carnet debe ser un número entero")
     if not nombres or not isinstance(nombres, str):
